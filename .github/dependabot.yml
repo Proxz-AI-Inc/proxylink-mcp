@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    versioning-strategy: 'increase'
+    groups:
+      dev-dependencies:
+        dependency-type: 'development'
+
+  - package-ecosystem: 'npm'
+    directory: '/examples/basic-mcp-server'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'

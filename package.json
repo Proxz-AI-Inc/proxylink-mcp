@@ -1,0 +1,66 @@
+{
+  "name": "@proxylink/mcp",
+  "version": "0.1.0",
+  "description": "Reusable ProxyLink support tools for MCP servers.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "ProxyLink",
+  "homepage": "https://github.com/<your-github-org>/proxylink-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/<your-github-org>/proxylink-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<your-github-org>/proxylink-mcp.git"
+  },
+  "keywords": [
+    "proxylink",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "support-tools"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "test": "tsx --test tests/**/*.test.ts",
+    "example:build": "npm run build -w examples/basic-mcp-server",
+    "example:typecheck": "npm run typecheck -w examples/basic-mcp-server",
+    "pack:dry-run": "npm pack --dry-run",
+    "release:check": "npm audit --audit-level=high && npm run typecheck && npm test && npm run build && npm run example:typecheck && npm run pack:dry-run"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": ">=1.29.0 <2",
+    "zod": "^3.25.0 || ^4.0.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@types/node": "22.15.21",
+    "tsx": "4.22.0",
+    "typescript": "5.9.3",
+    "zod": "4.4.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "examples/basic-mcp-server"
+  ]
+}
