@@ -1,6 +1,6 @@
 {
   "name": "@proxylink/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Reusable ProxyLink support tools for MCP servers.",
   "type": "module",
   "license": "Apache-2.0",
@@ -22,10 +22,21 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "catalog": [
+        "./dist/catalog/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./catalog": {
+      "types": "./dist/catalog/index.d.ts",
+      "import": "./dist/catalog/index.js"
     }
   },
   "files": [
