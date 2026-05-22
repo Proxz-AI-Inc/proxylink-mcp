@@ -1,8 +1,12 @@
 import type {
   CreateTicketRequest,
   CreateTicketResponse,
+  PricingLookupRequest,
+  PricingLookupResponse,
   ProxyLinkClient,
   QueryResponse,
+  TenantProfile,
+  TenantProfileResponse,
   TicketType,
   TicketTypesResponse,
 } from '../types.js';
@@ -96,6 +100,30 @@ export function createProxyLinkClient(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticket),
+      });
+    },
+
+    async fetchTenantProfile(): Promise<TenantProfile> {
+      const data = await requestJson<TenantProfileResponse>('/tenant/profile', {
+        method: 'GET',
+      });
+
+      if (!data.success || !data.profile) {
+        throw new ProxyLinkApiError(
+          data.error || 'Failed to fetch tenant profile.',
+        );
+      }
+
+      return data.profile;
+    },
+
+    pricingLookup(
+      request: PricingLookupRequest,
+    ): Promise<PricingLookupResponse> {
+      return requestJson<PricingLookupResponse>('/pricing/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
       });
     },
   };

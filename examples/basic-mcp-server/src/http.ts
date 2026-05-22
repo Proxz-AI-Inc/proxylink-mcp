@@ -102,13 +102,13 @@ const httpServer = createServer(async (req, res) => {
   }
 
   if (url.pathname === MCP_PATH && req.method === 'POST') {
-    let server: ReturnType<typeof createConfiguredMcpServer> | undefined;
+    let server: Awaited<ReturnType<typeof createConfiguredMcpServer>> | undefined;
     let transport: StreamableHTTPServerTransport | undefined;
 
     try {
       const body = (await parseJsonBody(req)) as McpRequestBody | undefined;
 
-      server = createConfiguredMcpServer();
+      server = await createConfiguredMcpServer();
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
       });

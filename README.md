@@ -39,7 +39,7 @@ const server = new McpServer({
   version: '1.0.0',
 });
 
-registerProxyLinkSupport(server, {
+await registerProxyLinkSupport(server, {
   companyName: 'Acme',
   toolPrefix: 'acme',
   apiUrl: process.env.PROXYLINK_API_URL!,
@@ -48,14 +48,33 @@ registerProxyLinkSupport(server, {
 });
 ```
 
-Registered tool names are deterministic:
+> **Breaking change in v0.2.0:** `registerProxyLinkSupport` is now `async`.
+> Add `await` (or chain `.then()`) when you call it.
+
+Registered core tool names are deterministic:
 
 - `acme_search_knowledge_base`
 - `acme_get_ticket_types`
 - `acme_create_support_ticket`
 
+If the tenant's industry/category matches a built-in industry pack, additional
+vertical tools register automatically. For example, a `home-services` / `hvac`
+tenant gets:
+
+- `acme_replacement_pricing`
+
 Set `features.knowledgeBase: false` or `features.tickets: false` to skip
-either group.
+either core group. Vertical tools always register when the industry pack
+matches.
+
+### Industry catalog subpath
+Constants describing supported add-ons, tonnages, and tier IDs are exported
+from a stable subpath so the same catalog can power dashboards and other
+consumers without re-implementing them:
+
+```ts
+import { HVAC_ADDONS, HVAC_TONNAGES, HVAC_TIERS } from '@proxylink/mcp/catalog';
+```
 
 ## Development
 
