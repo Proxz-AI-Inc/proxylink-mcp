@@ -1,12 +1,13 @@
-import { errorOutput, structuredOutput } from '../../../response.js';
-import { logError } from '../../../logging.js';
+import { errorOutput, structuredOutput } from '../../response.js';
+import { logError } from '../../logging.js';
 import type {
   McpAdapter,
   NormalizedProxyLinkSupportConfig,
   ProxyLinkClient,
-  TenantProfile,
   ToolOutput,
-} from '../../../types.js';
+} from '../../types.js';
+import type { TenantProfile } from '../types.js';
+import type { PricingLookupResponse } from './types.js';
 import { HVAC_ADDONS, HVAC_TONNAGES, getHvacAddOn } from './catalog.js';
 import {
   replacementPricingInputSchema,
@@ -18,9 +19,7 @@ function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function buildHumanText(
-  result: Awaited<ReturnType<ProxyLinkClient['pricingLookup']>>,
-): string {
+function buildHumanText(result: PricingLookupResponse): string {
   if (!result.success || !result.tiers) {
     return result.error ?? 'Pricing unavailable.';
   }
@@ -85,14 +84,21 @@ export function registerHvacReplacementPricingTool(
         );
       }
       try {
-        const result = await client.pricingLookup({
-          category: 'hvac',
-          params: {
-            tonnage: input.tonnage,
-            tierId: input.tierId,
-            addOns: input.addOns,
+        const result = await client.requestJson<PricingLookupResponse>(
+          '/pricing/lookup',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              category: 'hvac',
+              params: {
+                tonnage: input.tonnage,
+                tierId: input.tierId,
+                addOns: input.addOns,
+              },
+            }),
           },
-        });
+        );
 
         if (!result.success) {
           return errorOutput(

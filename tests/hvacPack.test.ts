@@ -5,7 +5,7 @@ import {
   HVAC_ADDONS,
   HVAC_TONNAGES,
   getHvacAddOn,
-} from '../src/catalog/index.js';
+} from '../src/packs/hvac/catalog.js';
 import { FakeMcpServer, jsonResponse } from './helpers.js';
 
 const baseConfig = {

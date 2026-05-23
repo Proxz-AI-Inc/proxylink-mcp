@@ -6,7 +6,7 @@ import {
 } from '../schemas.js';
 import { errorOutput, structuredOutput } from '../response.js';
 import { logError } from '../logging.js';
-import { validateTicketInput } from '../validation/ticketValidation.js';
+import { validateTicketInput } from '../validation.js';
 import type {
   CreateTicketInput,
   McpAdapter,

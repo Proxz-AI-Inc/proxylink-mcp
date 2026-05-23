@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateTicketInput } from '../src/validation/ticketValidation.js';
+import { validateTicketInput } from '../src/validation.js';
 import type { TicketType } from '../src/index.js';
 
 const ticketTypes: TicketType[] = [

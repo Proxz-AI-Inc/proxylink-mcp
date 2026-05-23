@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createProxyLinkClient, ProxyLinkApiError } from '../src/client/proxylinkClient.js';
+import { createProxyLinkClient, ProxyLinkApiError } from '../src/client.js';
 import { jsonResponse } from './helpers.js';
 
 test('queryKnowledgeBase posts to /query with bearer auth', async () => {

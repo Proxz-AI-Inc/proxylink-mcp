@@ -1,4 +1,4 @@
-import type { CreateTicketInput, TicketType } from '../types.js';
+import type { CreateTicketInput, TicketType } from './types.js';
 
 export interface TicketValidationSuccess {
   ok: true;
