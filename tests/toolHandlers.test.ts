@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createMcpSdkAdapter } from '../src/adapters/mcpSdkAdapter.js';
+import { createMcpSdkAdapter } from '../src/adapter.js';
 import { normalizeConfig } from '../src/config.js';
 import { buildToolNames } from '../src/toolNames.js';
 import { registerKnowledgeBaseTool } from '../src/tools/knowledgeBase.js';
@@ -10,6 +10,7 @@ import { FakeMcpServer } from './helpers.js';
 
 function createClient(overrides: Partial<ProxyLinkClient>): ProxyLinkClient {
   return {
+    requestJson: async () => ({}) as never,
     queryKnowledgeBase: async () => ({ success: true, answer: 'Answer' }),
     fetchTicketTypes: async () => [
       {

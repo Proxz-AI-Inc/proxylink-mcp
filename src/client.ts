@@ -1,15 +1,12 @@
 import type {
   CreateTicketRequest,
   CreateTicketResponse,
-  PricingLookupRequest,
-  PricingLookupResponse,
   ProxyLinkClient,
   QueryResponse,
-  TenantProfile,
-  TenantProfileResponse,
+  RequestJsonInit,
   TicketType,
   TicketTypesResponse,
-} from '../types.js';
+} from './types.js';
 
 export interface ProxyLinkClientOptions {
   apiUrl: string;
@@ -27,10 +24,6 @@ export class ProxyLinkApiError extends Error {
   }
 }
 
-function trimTrailingSlash(value: string): string {
-  return value.endsWith('/') ? value.slice(0, -1) : value;
-}
-
 async function readErrorMessage(response: Response): Promise<string> {
   const data = (await response.json().catch(() => ({}))) as { error?: unknown };
 
@@ -44,12 +37,12 @@ async function readErrorMessage(response: Response): Promise<string> {
 export function createProxyLinkClient(
   options: ProxyLinkClientOptions,
 ): ProxyLinkClient {
-  const apiUrl = trimTrailingSlash(options.apiUrl);
+  const apiUrl = options.apiUrl.replace(/\/+$/, '');
   const fetchImpl = options.fetchFn ?? fetch;
 
   async function requestJson<T>(
     path: string,
-    init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> },
+    init: RequestJsonInit = {},
   ): Promise<T> {
     const response = await fetchImpl(`${apiUrl}${path}`, {
       ...init,
@@ -67,6 +60,8 @@ export function createProxyLinkClient(
   }
 
   return {
+    requestJson,
+
     queryKnowledgeBase(
       query: string,
       originalQuestion?: string,
@@ -100,30 +95,6 @@ export function createProxyLinkClient(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticket),
-      });
-    },
-
-    async fetchTenantProfile(): Promise<TenantProfile> {
-      const data = await requestJson<TenantProfileResponse>('/tenant/profile', {
-        method: 'GET',
-      });
-
-      if (!data.success || !data.profile) {
-        throw new ProxyLinkApiError(
-          data.error || 'Failed to fetch tenant profile.',
-        );
-      }
-
-      return data.profile;
-    },
-
-    pricingLookup(
-      request: PricingLookupRequest,
-    ): Promise<PricingLookupResponse> {
-      return requestJson<PricingLookupResponse>('/pricing/lookup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request),
       });
     },
   };

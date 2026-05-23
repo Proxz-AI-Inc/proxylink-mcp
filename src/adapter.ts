@@ -1,5 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { McpAdapter, ProxyLinkToolDefinition } from '../types.js';
+import type { McpAdapter, ProxyLinkToolDefinition } from './types.js';
 
 interface RegisterToolServer {
   registerTool(

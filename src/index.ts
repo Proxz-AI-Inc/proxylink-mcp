@@ -1,4 +1,4 @@
-export { registerProxyLinkSupport } from './registerProxyLinkSupport.js';
+export { registerProxyLinkSupport } from './register.js';
 export type {
   ConversationMessage,
   CreateTicketInput,

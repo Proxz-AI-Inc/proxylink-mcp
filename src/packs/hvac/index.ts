@@ -1,5 +1,5 @@
-import type { IndustryPack, IndustryPackContext } from '../../types.js';
-import { registerHvacReplacementPricingTool } from './replacementPricing.js';
+import type { IndustryPack, IndustryPackContext } from '../types.js';
+import { registerHvacReplacementPricingTool } from './tool.js';
 
 export const hvacPack: IndustryPack = {
   id: 'home-services/hvac',

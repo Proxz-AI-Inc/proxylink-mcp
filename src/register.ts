@@ -1,8 +1,9 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { createMcpSdkAdapter } from './adapters/mcpSdkAdapter.js';
-import { createProxyLinkClient } from './client/proxylinkClient.js';
+import { createMcpSdkAdapter } from './adapter.js';
+import { createProxyLinkClient } from './client.js';
 import { normalizeConfig } from './config.js';
-import { getIndustryPack } from './industries/index.js';
+import { getIndustryPack } from './packs/registry.js';
+import type { TenantProfileResponse } from './packs/types.js';
 import { logError } from './logging.js';
 import { buildToolNames } from './toolNames.js';
 import { registerKnowledgeBaseTool } from './tools/knowledgeBase.js';
@@ -45,22 +46,30 @@ export async function registerProxyLinkSupport(
   }
 
   try {
-    const profile = await client.fetchTenantProfile();
-    const pack = getIndustryPack(profile.industry, profile.category);
+    const data = await client.requestJson<TenantProfileResponse>(
+      '/tenant/profile',
+      { method: 'GET' },
+    );
+
+    if (!data.success || !data.profile) {
+      throw new Error(data.error || 'Failed to fetch tenant profile.');
+    }
+
+    const pack = getIndustryPack(data.profile.industry, data.profile.category);
     if (pack) {
       const industryToolNames = pack.register({
         adapter,
         config: normalizedConfig,
         client,
-        profile,
+        profile: data.profile,
         toolPrefix: normalizedConfig.toolPrefix,
       });
       toolNames.industryToolNames = industryToolNames;
       toolNames.all.push(...industryToolNames);
     } else {
       normalizedConfig.logger?.warn?.('proxylink_unknown_industry', {
-        industry: profile.industry,
-        category: profile.category,
+        industry: data.profile.industry,
+        category: data.profile.category,
       });
     }
   } catch (error) {
