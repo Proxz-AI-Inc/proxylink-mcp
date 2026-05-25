@@ -1,77 +1,47 @@
 import { z } from 'zod';
-import {
-  HVAC_ADDONS,
-  HVAC_TIER_IDS,
-  HVAC_TONNAGES,
-  getHvacAddOn,
-} from './catalog.js';
+import { HVAC_TIER_IDS, HVAC_TONNAGES } from './catalog.js';
 
 const tonnageList = [...HVAC_TONNAGES] as number[];
 const tierIdEnum = z.enum(HVAC_TIER_IDS);
-const addOnIds = HVAC_ADDONS.map(a => a.id);
-const addOnIdEnum = z.enum(addOnIds as unknown as readonly [string, ...string[]]);
 
-const addOnInputSchema = z.object({
-  id: addOnIdEnum.describe('Add-on identifier from the HVAC catalog.'),
-  quantity: z
+const jobDetailsSchema = z.object({
+  flightsOfStairs: z
     .number()
     .int()
-    .positive()
-    .optional()
+    .nonnegative()
     .describe(
-      'Required when the add-on is per-unit (e.g., flights of stairs). Omit for flat add-ons.',
+      "Required. Number of flights of stairs the technician must climb to reach the install location. A flight is 8 or more steps. Enter 0 if there are no stairs. Ask the customer this before calling — never guess or default.",
+    ),
+  inAtticWithDropDownLadder: z
+    .boolean()
+    .describe(
+      "Required. True if the HVAC unit is located in an attic accessed via a drop-down ladder. Ask the customer this before calling — never guess or default.",
+    ),
+  canParkWithin100Ft: z
+    .boolean()
+    .describe(
+      "Required. True if the technician will be able to park within 100 feet of the front door. Ask the customer this before calling — never guess or default.",
     ),
 });
 
-export const replacementPricingInputSchema = z
-  .object({
-    tonnage: z
-      .number()
-      .refine(v => tonnageList.includes(v), {
-        message: `Tonnage must be one of: ${tonnageList.join(', ')}`,
-      })
-      .describe(
-        'Unit tonnage. Must match a tonnage configured by the company.',
-      ),
-    tierId: tierIdEnum
-      .optional()
-      .describe(
-        'Optional tier filter. When omitted, all three tiers are returned.',
-      ),
-    addOns: z
-      .array(addOnInputSchema)
-      .default([])
-      .describe(
-        'Applicable add-on surcharges. Stairs require a quantity (flights). Attic and distance are one-time flat fees.',
-      ),
-  })
-  .superRefine((value, ctx) => {
-    value.addOns.forEach((addOn, index) => {
-      const definition = getHvacAddOn(addOn.id);
-      if (!definition) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['addOns', index, 'id'],
-          message: `Unknown add-on id: ${addOn.id}`,
-        });
-        return;
-      }
-      if (definition.pricingType === 'per-unit' && addOn.quantity === undefined) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['addOns', index, 'quantity'],
-          message: `Add-on '${definition.id}' is per-unit and requires a quantity (${definition.unitLabel ?? 'unit count'}).`,
-        });
-      }
-      if (definition.pricingType === 'flat' && addOn.quantity !== undefined) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['addOns', index, 'quantity'],
-          message: `Add-on '${definition.id}' is a flat fee and does not accept a quantity.`,
-        });
-      }
-    });
-  });
+export const replacementPricingInputSchema = z.object({
+  tonnage: z
+    .number()
+    .refine(v => tonnageList.includes(v), {
+      message: `Tonnage must be one of: ${tonnageList.join(', ')}`,
+    })
+    .describe(
+      'Unit tonnage. Must match a tonnage configured by the company. Ask the customer to confirm tonnage before calling — never guess or default.',
+    ),
+  tierId: tierIdEnum
+    .optional()
+    .describe(
+      'Optional tier filter. When omitted, all three tiers are returned.',
+    ),
+  jobDetails: jobDetailsSchema.describe(
+    'GATE 2 answers. All three fields are required and represent the job characteristics that influence pricing add-ons.',
+  ),
+});
 
 export const priceRangeSchema = z.object({
   lowCents: z.number().int().nonnegative(),
