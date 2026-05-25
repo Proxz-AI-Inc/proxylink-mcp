@@ -147,9 +147,14 @@ test('registers HVAC pricing tool when profile matches home-services/hvac', asyn
   );
 
   assert.deepEqual(result.industryToolNames, ['acme_replacement_pricing']);
-  assert.ok(
-    server.registeredTools.some(t => t.name === 'acme_replacement_pricing'),
-    'HVAC pricing tool should be registered',
+  const pricingTool = server.registeredTools.find(
+    t => t.name === 'acme_replacement_pricing',
   );
+  assert.ok(pricingTool, 'HVAC pricing tool should be registered');
   assert.ok(result.all.includes('acme_replacement_pricing'));
+  assert.match(
+    pricingTool!.description!,
+    /acme_show_appointment_scheduler/,
+    'description should reference the conventional scheduler tool name',
+  );
 });

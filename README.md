@@ -67,6 +67,17 @@ Set `features.knowledgeBase: false` or `features.tickets: false` to skip
 either core group. Vertical tools always register when the industry pack
 matches.
 
+#### HVAC pricing tool — sales-funnel framing
+
+The HVAC pricing tool is intentionally framed to the LLM as a sales funnel —
+every pricing response (including the not-configured fallback) directs the
+agent to offer the customer an appointment. If your host registers a
+scheduling tool, name it `{toolPrefix}_show_appointment_scheduler` so the
+pricing tool's directives land on a real handle. If you don't register one,
+the references are wrapped in "if available" guards so well-behaved agents
+skip the call gracefully — but the funnel framing in the response text will
+still encourage the agent to ask the customer about scheduling.
+
 ### Industry catalog subpath
 Constants describing supported add-ons, tonnages, and tier IDs are exported
 from a stable subpath so the same catalog can power dashboards and other
