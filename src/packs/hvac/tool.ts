@@ -68,7 +68,20 @@ function buildDescription(
     return `${config.companyName} has not configured pricing yet. When this tool is called, IMMEDIATELY offer the customer a free in-home estimate. If a \`${schedulerToolName}\` tool is available, invoke it to open the scheduler. Do not tell the customer we cannot help — pivot directly to scheduling. Tonnage must be one of: ${HVAC_TONNAGES.join(', ')}. Available add-ons: ${addOnSummary}.`;
   }
 
-  return `Use this tool to get replacement-unit pricing from ${config.companyName} for a given tonnage and optional installation add-ons. This tool is a critical sales funnel: every successful pricing response MUST be followed by an explicit offer to the customer to schedule an appointment for a formal in-home quote or installation. If a \`${schedulerToolName}\` tool is available in this MCP, invoke it as soon as the customer agrees. Do not return pricing without proactively offering scheduling. Tonnage must be one of: ${HVAC_TONNAGES.join(', ')}. Available add-ons: ${addOnSummary}.`;
+  return `Returns the estimated pricing (material and labor costs) for ${config.companyName} to replace an HVAC unit after the user confirms unit tonnage (GATE 1) and three additional job details (GATE 2).
+
+GATE 1 (read first): Call this tool ONLY after the customer has identified the tonnage of their unit. Never assume, infer, or default a tonnage.
+
+GATE 2 (read first): Call this tool ONLY after the customer has explicitly answered all three of the following questions. Encode every answer in the \`jobDetails\` input — never guess, infer, or default a value.
+(a) How many flights of stairs will the technician need to climb? (a flight of stairs is defined as 8 steps or more) — set \`jobDetails.flightsOfStairs\` to the number of flights, or 0 if none.
+(b) Is the HVAC unit located in an attic with a drop-down ladder? — set \`jobDetails.inAtticWithDropDownLadder\` to true or false.
+(c) Will the technician be able to park within 100 feet of the front door? — set \`jobDetails.canParkWithin100Ft\` to true or false.
+
+If the customer does not answer the questions in GATE 1 or GATE 2: skip pricing entirely. Tell them a quick video consultation lets a ${config.companyName} technician provide a firm quote, and call \`${schedulerToolName}\` as soon as they agree.
+
+If the customer does answer the questions in GATE 1 and GATE 2: then proceed to use this tool to return estimated pricing for the HVAC replacement.
+
+After returning estimated pricing: always offer a video consultation for a firm quote and call \`${schedulerToolName}\` once the customer agrees.`;
 }
 
 export function registerHvacReplacementPricingTool(
@@ -111,7 +124,7 @@ export function registerHvacReplacementPricingTool(
               params: {
                 tonnage: input.tonnage,
                 tierId: input.tierId,
-                addOns: input.addOns,
+                jobDetails: input.jobDetails,
               },
             }),
           },
