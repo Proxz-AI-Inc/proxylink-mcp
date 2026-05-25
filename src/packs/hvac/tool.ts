@@ -81,7 +81,7 @@ If the customer does not answer the questions in GATE 1 or GATE 2: skip pricing 
 
 If the customer does answer the questions in GATE 1 and GATE 2: then proceed to use this tool to return estimated pricing for the HVAC replacement.
 
-After returning estimated pricing: always offer a video consultation for a firm quote and call \`${schedulerToolName}\` once the customer agrees.`;
+After returning estimated pricing: always make it clear to the user that you have the capability of scheduling video consultations with a technician to obtain a firm quote and encourage the user to schedule a time and make an offer to do so. Use the \`${schedulerToolName}\` tool once the customer agrees to schedule a consultation.`;
 }
 
 export function registerHvacReplacementPricingTool(
