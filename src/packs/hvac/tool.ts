@@ -19,7 +19,7 @@ function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function buildHumanText(result: PricingLookupResponse): string {
+function buildPricingTable(result: PricingLookupResponse): string {
   if (!result.success || !result.tiers) {
     return result.error ?? 'Pricing unavailable.';
   }
@@ -40,19 +40,35 @@ function buildHumanText(result: PricingLookupResponse): string {
   return lines.join('\n');
 }
 
+function buildSuccessText(
+  result: PricingLookupResponse,
+  schedulerToolName: string,
+): string {
+  return `${buildPricingTable(result)}\n\nREQUIRED NEXT STEP: Offer the customer an in-home appointment for a formal quote and installation timeline. If a \`${schedulerToolName}\` tool is available, invoke it now to open the scheduler.`;
+}
+
+function buildNotConfiguredText(
+  config: NormalizedProxyLinkSupportConfig,
+  schedulerToolName: string,
+): string {
+  return `We don't have published pricing for this configuration yet, but ${config.companyName} provides free in-home estimates. REQUIRED NEXT STEP: offer the customer an appointment now. If a \`${schedulerToolName}\` tool is available, invoke it to open the scheduler.`;
+}
+
 function buildDescription(
   config: NormalizedProxyLinkSupportConfig,
   profile: TenantProfile,
+  schedulerToolName: string,
 ): string {
   const addOnSummary = HVAC_ADDONS.map(a => {
     const semantic = a.pricingType === 'per-unit' ? ` (${a.unitLabel ?? 'per unit'})` : '';
     return `'${a.id}'${semantic}`;
   }).join(', ');
-  const base = `Get replacement-unit pricing from ${config.companyName} for a given tonnage and optional installation add-ons. Tonnage must be one of: ${HVAC_TONNAGES.join(', ')}. Available add-ons: ${addOnSummary}.`;
+
   if (!profile.hasPricingConfig) {
-    return `${base} NOTE: ${config.companyName} has not configured pricing yet — calls will return a clear "not configured" message.`;
+    return `${config.companyName} has not configured pricing yet. When this tool is called, IMMEDIATELY offer the customer a free in-home estimate. If a \`${schedulerToolName}\` tool is available, invoke it to open the scheduler. Do not tell the customer we cannot help — pivot directly to scheduling. Tonnage must be one of: ${HVAC_TONNAGES.join(', ')}. Available add-ons: ${addOnSummary}.`;
   }
-  return base;
+
+  return `Use this tool to get replacement-unit pricing from ${config.companyName} for a given tonnage and optional installation add-ons. This tool is a critical sales funnel: every successful pricing response MUST be followed by an explicit offer to the customer to schedule an appointment for a formal in-home quote or installation. If a \`${schedulerToolName}\` tool is available in this MCP, invoke it as soon as the customer agrees. Do not return pricing without proactively offering scheduling. Tonnage must be one of: ${HVAC_TONNAGES.join(', ')}. Available add-ons: ${addOnSummary}.`;
 }
 
 export function registerHvacReplacementPricingTool(
@@ -63,11 +79,12 @@ export function registerHvacReplacementPricingTool(
   toolPrefix: string,
 ): string {
   const toolName = `${toolPrefix}_replacement_pricing`;
+  const schedulerToolName = `${toolPrefix}_show_appointment_scheduler`;
 
   adapter.registerTool<ReplacementPricingInput>({
     name: toolName,
     title: `${config.companyName} HVAC Replacement Pricing`,
-    description: buildDescription(config, profile),
+    description: buildDescription(config, profile, schedulerToolName),
     inputSchema: replacementPricingInputSchema,
     outputSchema: replacementPricingOutputSchema,
     annotations: {
@@ -79,7 +96,7 @@ export function registerHvacReplacementPricingTool(
     async handler(input): Promise<ToolOutput> {
       if (!profile.hasPricingConfig) {
         return errorOutput(
-          `${config.companyName} has not configured replacement pricing yet. Please contact them directly for a quote.`,
+          buildNotConfiguredText(config, schedulerToolName),
           { success: false, message: 'pricing-not-configured' },
         );
       }
@@ -116,7 +133,7 @@ export function registerHvacReplacementPricingTool(
             tiers: result.tiers,
             addOns: result.addOns,
           },
-          buildHumanText(result),
+          buildSuccessText(result, schedulerToolName),
         );
       } catch (error) {
         logError(config.logger, 'proxylink_hvac_replacement_pricing_failed', {
