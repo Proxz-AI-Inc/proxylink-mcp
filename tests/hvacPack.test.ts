@@ -117,6 +117,7 @@ test('handler returns funnel response when hasPricingConfig is false', async () 
   assert.match(output.content[0].text, /acme_show_appointment_scheduler/);
   assert.match(output.content[0].text, /REQUIRED NEXT STEP/);
   assert.match(output.content[0].text, /free in-home estimate/i);
+  assert.match(output.content[0].text, /provide the scheduling link/i);
   assert.equal(output.structuredContent?.message, 'pricing-not-configured');
 });
 
@@ -272,6 +273,7 @@ test('description on not-configured branch contains aggressive scheduling pivot'
   assert.ok(tool);
   assert.match(tool!.description!, /acme_show_appointment_scheduler/);
   assert.match(tool!.description!, /IMMEDIATELY/);
+  assert.match(tool!.description!, /provide the scheduling link/i);
   assert.match(tool!.description!, /pivot directly to scheduling/i);
 });
 
@@ -293,6 +295,7 @@ test('successful pricing response contains REQUIRED NEXT STEP + scheduler refere
   assert.equal(output.structuredContent?.success, true);
   assert.match(output.content[0].text, /REQUIRED NEXT STEP/);
   assert.match(output.content[0].text, /acme_show_appointment_scheduler/);
+  assert.match(output.content[0].text, /provide the scheduling link/i);
   assert.match(output.content[0].text, /Replacement pricing for 3-ton unit/);
 });
 

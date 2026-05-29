@@ -72,8 +72,8 @@ matches.
 The HVAC pricing tool is intentionally framed to the LLM as a sales funnel —
 every pricing response (including the not-configured fallback) directs the
 agent to offer the customer an appointment. If your host registers a
-scheduling tool, name it `{toolPrefix}_show_appointment_scheduler` so the
-pricing tool's directives land on a real handle. If you don't register one,
+scheduling link tool, name it `{toolPrefix}_show_appointment_scheduler` so the
+pricing tool can direct the agent to provide a booking link. If you don't register one,
 the references are wrapped in "if available" guards so well-behaved agents
 skip the call gracefully — but the funnel framing in the response text will
 still encourage the agent to ask the customer about scheduling.

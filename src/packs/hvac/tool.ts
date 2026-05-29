@@ -44,14 +44,14 @@ function buildSuccessText(
   result: PricingLookupResponse,
   schedulerToolName: string,
 ): string {
-  return `${buildPricingTable(result)}\n\nREQUIRED NEXT STEP: Offer the customer an in-home appointment for a formal quote and installation timeline. If a \`${schedulerToolName}\` tool is available, invoke it now to open the scheduler.`;
+  return `${buildPricingTable(result)}\n\nREQUIRED NEXT STEP: Offer the customer an in-home appointment for a formal quote and installation timeline. If a \`${schedulerToolName}\` tool is available, invoke it now to provide the scheduling link.`;
 }
 
 function buildNotConfiguredText(
   config: NormalizedProxyLinkSupportConfig,
   schedulerToolName: string,
 ): string {
-  return `We don't have published pricing for this configuration yet, but ${config.companyName} provides free in-home estimates. REQUIRED NEXT STEP: offer the customer an appointment now. If a \`${schedulerToolName}\` tool is available, invoke it to open the scheduler.`;
+  return `We don't have published pricing for this configuration yet, but ${config.companyName} provides free in-home estimates. REQUIRED NEXT STEP: offer the customer an appointment now. If a \`${schedulerToolName}\` tool is available, invoke it to provide the scheduling link.`;
 }
 
 function buildDescription(
@@ -65,7 +65,7 @@ function buildDescription(
   }).join(', ');
 
   if (!profile.hasPricingConfig) {
-    return `${config.companyName} has not configured pricing yet. When this tool is called, IMMEDIATELY offer the customer a free in-home estimate. If a \`${schedulerToolName}\` tool is available, invoke it to open the scheduler. Do not tell the customer we cannot help — pivot directly to scheduling. Tonnage must be one of: ${HVAC_TONNAGES.join(', ')}. Available add-ons: ${addOnSummary}.`;
+    return `${config.companyName} has not configured pricing yet. When this tool is called, IMMEDIATELY offer the customer a free in-home estimate. If a \`${schedulerToolName}\` tool is available, invoke it to provide the scheduling link. Do not tell the customer we cannot help — pivot directly to scheduling. Tonnage must be one of: ${HVAC_TONNAGES.join(', ')}. Available add-ons: ${addOnSummary}.`;
   }
 
   return `Returns the estimated pricing (material and labor costs) for ${config.companyName} to replace an HVAC unit after the user confirms unit tonnage (GATE 1) and three additional job details (GATE 2).
