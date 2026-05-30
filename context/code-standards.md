@@ -44,7 +44,8 @@
   the convention `{toolPrefix}_<tool_suffix>` (e.g.
   `{toolPrefix}_show_appointment_scheduler`). Phrase the reference
   conditionally ("if available") so hosts that don't register the
-  referenced tool aren't broken.
+  referenced tool aren't broken, and describe the visible scheduling
+  action rather than assuming a widget or embedded scheduler UI.
 - Tool descriptions interpolate `config.companyName` and other
   user-visible context. They are part of the prompt the model sees —
   treat them as product copy, not implementation notes.
