@@ -57,11 +57,15 @@ Registered core tool names are deterministic:
 - `acme_get_ticket_types`
 - `acme_create_support_ticket`
 
-If the tenant's industry/category matches a built-in industry pack, additional
-vertical tools register automatically. For example, a `home-services` / `hvac`
-tenant gets:
+If the tenant's industry or industry/category matches a built-in industry pack,
+additional vertical tools register automatically. For example, a
+`home-services` / `hvac` tenant gets:
 
 - `acme_replacement_pricing`
+
+A `consulting` tenant gets:
+
+- `acme_schedule_call`
 
 Set `features.knowledgeBase: false` or `features.tickets: false` to skip
 either core group. Vertical tools always register when the industry pack
@@ -77,6 +81,13 @@ pricing tool can direct the agent to provide a booking link. If you don't regist
 the references are wrapped in "if available" guards so well-behaved agents
 skip the call gracefully — but the funnel framing in the response text will
 still encourage the agent to ask the customer about scheduling.
+
+#### Consulting schedule-call tool
+
+The consulting pack registers `{toolPrefix}_schedule_call`. The tool returns
+the tenant's configured scheduling URL from the ProxyLink tenant profile and is
+framed for consulting conversations where the customer wants to discuss scope,
+fit, proposals, pricing, or next steps with the consultant.
 
 ### Industry catalog subpath
 Constants describing supported add-ons, tonnages, and tier IDs are exported

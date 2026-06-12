@@ -42,9 +42,10 @@ This is a library — its "user" is a developer writing a host MCP app.
    - registers `{prefix}_get_ticket_types` and
      `{prefix}_create_support_ticket` (if enabled),
    - fetches `GET /tenant/profile` from the ProxyLink API,
-   - if the profile's `industry/category` matches a built-in
+   - if the profile's `industry/category` or industry matches a built-in
      industry pack, registers the pack's tools (e.g.
-     `{prefix}_replacement_pricing` for HVAC),
+     `{prefix}_replacement_pricing` for HVAC or `{prefix}_schedule_call`
+     for consulting),
    - returns a `RegisteredProxyLinkTools` object listing every tool
      name it registered.
 5. Tool invocations from the MCP client flow through the host's
@@ -77,6 +78,10 @@ This is a library — its "user" is a developer writing a host MCP app.
   `{prefix}_show_appointment_scheduler` tool by convention — hosts
   that register one at that name get the upsell wired up automatically,
   hosts that don't are protected by "if available" guards in the copy.
+- `consulting` → `{prefix}_schedule_call` — Returns the tenant's
+  configured scheduling URL from `GET /tenant/profile`. It is framed for
+  consulting questions where the customer wants to discuss scope, fit,
+  proposals, pricing, or next steps with the consultant.
 
 ### Stable subpath exports
 
@@ -119,7 +124,7 @@ This is a library — its "user" is a developer writing a host MCP app.
 
 - Tool registration on a caller-provided `McpServer`
 - ProxyLink HTTP client (KB query, ticket types, ticket create,
-  tenant profile, pricing lookup)
+  tenant profile with scheduling URL, pricing lookup)
 - Input/output validation (Zod schemas + the `validateTicketInput`
   helper)
 - Industry pack registry + the HVAC pack
