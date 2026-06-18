@@ -7,6 +7,7 @@ import type {
 export interface TenantProfile {
   industry: string;
   category: string;
+  schedulingUrl?: string | null;
   hasPricingConfig: boolean;
   features: {
     pricing: boolean;

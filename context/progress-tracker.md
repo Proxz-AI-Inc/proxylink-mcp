@@ -4,10 +4,10 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- In progress — early library (v0.3.x is the active line). Surface is
+- In progress — early library (v0.5.x is the active line). Surface is
   stabilizing; pre-1.0 means small breaking changes still ship as
-  minor bumps when the docs flag them. v0.3.0 is purely additive copy
-  + behavior on the HVAC pack — no config or type surface changed.
+  minor bumps when the docs flag them. v0.5.0 adds the consulting
+  schedule-call pack and reads `schedulingUrl` from the tenant profile.
 
 ## Current Goal
 
@@ -18,6 +18,10 @@ Update this file after every meaningful implementation change.
 
 ## Completed
 
+- v0.5.0: Consulting industry pack added. `consulting` tenants now get
+  `{toolPrefix}_schedule_call`, a text/link scheduler tool backed by the
+  tenant profile `schedulingUrl`. The pack registry now supports
+  industry-only keys as well as `${industry}/${category}` keys.
 - v0.3.0: HVAC pricing tool reframed as a sales funnel. Tool
   description and successful response now directively prompt the
   agent to offer the customer an appointment via
@@ -72,9 +76,8 @@ Update this file after every meaningful implementation change.
 - Should `validateTicketInput` also enforce field-value types
   (`number` vs `string` per `TicketTypeFormField.type`)? Today it
   only checks field IDs and required-ness.
-- For the next pack, what determines the routing key? Today it is
-  `${industry}/${category}` from the tenant profile. Confirm that is
-  still the right granularity once a second pack lands.
+- For future packs, choose `${industry}/${category}` when the dashboard
+  requires a category and `industry` when the industry has no categories.
 
 ## Architecture Decisions
 
@@ -95,8 +98,9 @@ Update this file after every meaningful implementation change.
   the ESM + NodeNext config.
 - **Industry packs are auto-registered from the tenant profile** —
   hosts do not pass a pack list. The library calls `/tenant/profile`,
-  looks up `${industry}/${category}` in the registry, and registers
-  whatever matches (or warns and proceeds with core tools).
+  looks up `${industry}/${category}` when the profile has a category,
+  otherwise looks up `industry`, and registers whatever matches (or
+  warns and proceeds with core tools).
 - **Stable subpath export for the HVAC catalog** — chosen over
   duplicating constants in the dashboard. Hosts and dashboards both
   import the same source of truth via `@proxylink/mcp/catalog`.
@@ -107,9 +111,9 @@ Update this file after every meaningful implementation change.
   HVAC pack references the scheduler tool by deterministic name
   (`{toolPrefix}_show_appointment_scheduler`) rather than introducing
   a new config field. Wrapped in "if available" guards so hosts
-  without a scheduler aren't broken. Future scheduling pack registers
-  at the same conventional name; no rework needed here when that day
-  comes.
+  without a scheduler aren't broken. The consulting scheduler uses
+  `{toolPrefix}_schedule_call`, matching the consulting action rather
+  than the HVAC appointment wording.
 
 ## Session Notes
 

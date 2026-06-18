@@ -49,7 +49,8 @@
   logger.
 - `src/types.ts` — All shared types (public + internal).
 - `src/packs/registry.ts` — `industryPacks` map keyed by
-  `${industry}/${category}`. Add a new pack here.
+  `${industry}/${category}` for category packs or by `industry` for
+  industry-only packs. Add a new pack here.
 - `src/packs/types.ts` — `IndustryPack`, `IndustryPackContext`,
   `TenantProfile` shapes.
 - `src/packs/hvac/` — The first industry pack:
@@ -59,6 +60,10 @@
   - `catalog.ts` — `HVAC_ADDONS`, `HVAC_TONNAGES`, `HVAC_TIERS`
     (also re-exported via the `./catalog` subpath in `package.json`)
   - `types.ts` — Local pricing response types
+- `src/packs/consulting/` — Consulting scheduler pack:
+  - `index.ts` — registers the pack and the tool name
+  - `tool.ts` — `registerConsultingScheduleCallTool`
+  - `schema.ts` — Zod input/output for the schedule-call tool
 - `tests/` — Node-test files. One per source file or per behavior
   cluster (`client`, `toolHandlers`, `ticketValidation`, `hvacPack`,
   `registerProxyLinkSupport`). `tests/helpers.ts` holds stub adapter +
@@ -95,7 +100,7 @@ responsibility — do not add it here.
   client-cert, etc.) is the host's responsibility. The library trusts
   the MCP server it is handed.
 - `GET /tenant/profile` is fetched once at registration time to learn
-  the tenant's industry/category and capability flags
+  the tenant's industry/category, scheduling URL, and capability flags
   (`hasPricingConfig`). It is intentionally not re-fetched per
   invocation; reconnect to pick up profile changes.
 
@@ -136,6 +141,7 @@ responsibility — do not add it here.
     `{toolPrefix}_show_appointment_scheduler` tool by convention,
     wrapped in conditional "if available" phrasing. Hosts that want
     the upsell to land on a real handle register a scheduling tool at
-    that name. This is the seam for when scheduling becomes a real
-    industry pack — that pack will register at the conventional name
-    and the references resolve unchanged.
+    that name.
+12. The consulting pack registers `{toolPrefix}_schedule_call` from the
+    tenant's profile `schedulingUrl`. It is a text/link tool, not a
+    widget, so hosts do not need iframe or CSP setup.
