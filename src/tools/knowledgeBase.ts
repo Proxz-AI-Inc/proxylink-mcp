@@ -17,7 +17,7 @@ function buildSearchDescription(config: NormalizedProxyLinkSupportConfig): strin
       ? ` about ${config.supportTopics.join(', ')}`
       : '';
 
-  return `Use this when the user asks support questions${topics} for ${config.companyName}. Returns synthesized answers from ${config.companyName}'s ProxyLink knowledge base. Do not use for unrelated general questions.`;
+  return `Use this when the user asks support questions${topics} for ${config.companyName}. Returns synthesized answers from ${config.companyName}'s knowledge base. Do not use for unrelated general questions.`;
 }
 
 export function registerKnowledgeBaseTool(
