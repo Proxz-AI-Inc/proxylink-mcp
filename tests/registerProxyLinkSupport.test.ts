@@ -105,6 +105,27 @@ test('supports tickets-only feature registration', async () => {
   assert.equal(server.registeredTools.length, 2);
 });
 
+test('annotates ticket creation as a titled write tool', async () => {
+  const server = new FakeMcpServer();
+
+  await withMockedFetch(profileFailing, () =>
+    registerProxyLinkSupport(server as never, baseConfig),
+  );
+
+  const createTicketTool = server.registeredTools.find(
+    tool => tool.name === 'acme_create_support_ticket',
+  );
+
+  assert.equal(createTicketTool?.title, 'Create Acme Support Ticket');
+  assert.deepEqual(createTicketTool?.annotations, {
+    title: 'Create Acme Support Ticket',
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: false,
+  });
+});
+
 test('rejects invalid tool prefixes before registering tools', async () => {
   const server = new FakeMcpServer();
 

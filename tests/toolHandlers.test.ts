@@ -52,6 +52,7 @@ test('adapter calls server.registerTool with expected tool config', () => {
   assert.equal(server.registeredTools[0]?.name, 'acme_test');
   assert.equal(server.registeredTools[0]?.title, 'Test Tool');
   assert.deepEqual(server.registeredTools[0]?.annotations, {
+    title: 'Test Tool',
     readOnlyHint: true,
   });
 });
