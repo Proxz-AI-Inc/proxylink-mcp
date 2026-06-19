@@ -28,7 +28,10 @@ export function createMcpSdkAdapter(server: McpServer): McpAdapter {
           description: definition.description,
           inputSchema: definition.inputSchema,
           outputSchema: definition.outputSchema,
-          annotations: definition.annotations,
+          annotations: {
+            title: definition.title,
+            ...definition.annotations,
+          },
           _meta: definition.meta,
         },
         definition.handler as (input: unknown) => unknown,
