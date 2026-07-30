@@ -39,13 +39,13 @@ This is a library — its "user" is a developer writing a host MCP app.
 4. The library:
    - validates and normalizes the config,
    - registers `{prefix}_search_knowledge_base` (if enabled),
-   - registers `{prefix}_get_ticket_types` and
-     `{prefix}_create_support_ticket` (if enabled),
    - fetches `GET /tenant/profile` from the ProxyLink API,
-   - if the profile's `industry/category` or industry matches a built-in
-     industry pack, registers the pack's tools (e.g.
-     `{prefix}_replacement_pricing` for HVAC or `{prefix}_schedule_call`
-     for consulting),
+   - stops with Knowledge Base only if the profile cannot be loaded,
+   - resolves the profile's industry pack,
+   - registers `{prefix}_get_ticket_types` and
+     `{prefix}_create_support_ticket` when enabled and not replaced by
+     the selected pack,
+   - registers the selected industry pack,
    - returns a `RegisteredProxyLinkTools` object listing every tool
      name it registered.
 5. Tool invocations from the MCP client flow through the host's
@@ -82,6 +82,10 @@ This is a library — its "user" is a developer writing a host MCP app.
   configured scheduling URL from `GET /tenant/profile`. It is framed for
   consulting questions where the customer wants to discuss scope, fit,
   proposals, pricing, or next steps with the consultant.
+- `conferences` → Four tools for listing published Events, recording Event
+  registration interest, listing Member Actions, and submitting a Member
+  Action. This pack replaces the generic ticket tools while leaving Knowledge
+  Base search available.
 
 ### Stable subpath exports
 
@@ -124,10 +128,11 @@ This is a library — its "user" is a developer writing a host MCP app.
 
 - Tool registration on a caller-provided `McpServer`
 - ProxyLink HTTP client (KB query, ticket types, ticket create,
-  tenant profile with scheduling URL, pricing lookup)
+  tenant profile with scheduling URL, pricing lookup, conference Events,
+  and Member Actions)
 - Input/output validation (Zod schemas + the `validateTicketInput`
   helper)
-- Industry pack registry + the HVAC pack
+- Industry pack registry + HVAC, consulting, and conference packs
 - Stable type exports and the `/catalog` subpath
 - npm publish via OIDC trusted publishing on tag push
 

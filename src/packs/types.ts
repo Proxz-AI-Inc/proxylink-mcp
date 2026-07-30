@@ -30,5 +30,6 @@ export interface IndustryPackContext {
 
 export interface IndustryPack {
   id: string;
+  replacesTicketTools?: boolean;
   register(context: IndustryPackContext): string[];
 }

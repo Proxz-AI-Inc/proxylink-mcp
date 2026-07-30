@@ -58,7 +58,7 @@ Registered core tool names are deterministic:
 - `acme_create_support_ticket`
 
 If the tenant's industry or industry/category matches a built-in industry pack,
-additional vertical tools register automatically. For example, a
+vertical tools register automatically. For example, a
 `home-services` / `hvac` tenant gets:
 
 - `acme_replacement_pricing`
@@ -66,6 +66,17 @@ additional vertical tools register automatically. For example, a
 A `consulting` tenant gets:
 
 - `acme_schedule_call`
+
+A `conferences` tenant gets:
+
+- `acme_get_events`
+- `acme_submit_event_registration_interest`
+- `acme_get_member_actions`
+- `acme_submit_member_action`
+
+The conference pack replaces the generic ticket tools. Knowledge Base search
+remains available when enabled. If the tenant profile cannot be loaded, only
+Knowledge Base search registers.
 
 Set `features.knowledgeBase: false` or `features.tickets: false` to skip
 either core group. Vertical tools always register when the industry pack
@@ -88,6 +99,13 @@ The consulting pack registers `{toolPrefix}_schedule_call`. The tool returns
 the tenant's configured scheduling URL from the ProxyLink tenant profile and is
 framed for consulting conversations where the customer wants to discuss scope,
 fit, proposals, pricing, or next steps with the consultant.
+
+#### Conference tools
+
+The conference pack lists published events and Member Actions with their exact
+field definitions. Its two submission tools require a prior list call and
+explicit user confirmation. Event registration interest is never presented as
+confirmed registration, and neither submission sends conversation history.
 
 ### Industry catalog subpath
 Constants describing supported add-ons, tonnages, and tier IDs are exported

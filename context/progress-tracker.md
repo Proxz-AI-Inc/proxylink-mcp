@@ -4,10 +4,8 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- In progress — early library (v0.5.x is the active line). Surface is
-  stabilizing; pre-1.0 means small breaking changes still ship as
-  minor bumps when the docs flag them. v0.5.0 adds the consulting
-  schedule-call pack and reads `schedulingUrl` from the tenant profile.
+- In progress — early library. v0.6.0 is prepared locally with the
+  conference pack and has not been published.
 
 ## Current Goal
 
@@ -18,6 +16,11 @@ Update this file after every meaningful implementation change.
 
 ## Completed
 
+- v0.6.0 prepared: `conferences` tenants receive Event and Member Action
+  list/submission tools instead of generic ticket tools. Submission tools
+  require explicit confirmation, never forward conversation history, and
+  preserve the registration-interest disclaimer. Profile failure now leaves
+  Knowledge Base only.
 - v0.5.0: Consulting industry pack added. `consulting` tenants now get
   `{toolPrefix}_schedule_call`, a text/link scheduler tool backed by the
   tenant profile `schedulingUrl`. The pack registry now supports
@@ -99,8 +102,8 @@ Update this file after every meaningful implementation change.
 - **Industry packs are auto-registered from the tenant profile** —
   hosts do not pass a pack list. The library calls `/tenant/profile`,
   looks up `${industry}/${category}` when the profile has a category,
-  otherwise looks up `industry`, and registers whatever matches (or
-  warns and proceeds with core tools).
+  otherwise looks up `industry`, and registers whatever matches. A pack can
+  replace generic ticket tools. Profile failure leaves Knowledge Base only.
 - **Stable subpath export for the HVAC catalog** — chosen over
   duplicating constants in the dashboard. Hosts and dashboards both
   import the same source of truth via `@proxylink/mcp/catalog`.

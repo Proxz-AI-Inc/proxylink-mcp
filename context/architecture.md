@@ -22,9 +22,9 @@
   and the consumer-facing types. The only file external callers
   should be importing from at `@proxylink/mcp`.
 - `src/register.ts` — Orchestrator. Normalizes config, builds the
-  adapter, builds the client, computes tool names, conditionally
-  registers KB and ticket tools, fetches `/tenant/profile`, and
-  conditionally registers any matching industry pack.
+  adapter, builds the client, registers Knowledge Base, fetches
+  `/tenant/profile`, resolves the industry pack, conditionally registers
+  generic ticket tools, and registers the selected industry pack.
 - `src/config.ts` — `normalizeConfig`. Validates required fields,
   enforces the `toolPrefix` regex (`/^[A-Za-z][A-Za-z0-9_-]*$/`), strips
   trailing slash from `apiUrl`, defaults `features` to all-true.
@@ -64,6 +64,11 @@
   - `index.ts` — registers the pack and the tool name
   - `tool.ts` — `registerConsultingScheduleCallTool`
   - `schema.ts` — Zod input/output for the schedule-call tool
+- `src/packs/conferences/` — Conference workflow pack:
+  - `index.ts` — marks the pack as replacing generic ticket tools
+  - `tool.ts` — registers four Event and Member Action tools
+  - `schema.ts` — Zod input/output schemas
+  - `types.ts` — Conference API response types
 - `tests/` — Node-test files. One per source file or per behavior
   cluster (`client`, `toolHandlers`, `ticketValidation`, `hvacPack`,
   `registerProxyLinkSupport`). `tests/helpers.ts` holds stub adapter +
@@ -125,9 +130,9 @@ responsibility — do not add it here.
 6. `create_support_ticket` MUST re-fetch ticket types and call
    `validateTicketInput` before hitting `POST /ticket`. Skipping
    validation produces unreviewable server errors.
-7. Industry packs MUST NOT crash registration if `/tenant/profile`
-   fails — the orchestrator catches the error, logs it via the
-   pluggable logger, and proceeds with the core tools.
+7. A `/tenant/profile` failure is logged and registration stops with
+   Knowledge Base only. Generic ticket and industry workflow tools require a
+   verified tenant profile.
 8. No tool handler mutates the input object or the config object.
    Treat both as frozen.
 9. The build emits ESM-only with `.d.ts`. `package.json` `exports`
@@ -145,3 +150,6 @@ responsibility — do not add it here.
 12. The consulting pack registers `{toolPrefix}_schedule_call` from the
     tenant's profile `schedulingUrl`. It is a text/link tool, not a
     widget, so hosts do not need iframe or CSP setup.
+13. The conference pack sets `replacesTicketTools: true`. Conference hosts
+    receive the four Event and Member Action tools instead of generic ticket
+    type tools.
