@@ -56,6 +56,9 @@
   `errorOutput(...)`.
 - Conditional registration (features, packs) MUST be done inside
   `register.ts`. Tool files assume they are wanted.
+- Packs that replace the generic ticket tools declare
+  `replacesTicketTools: true`; `register.ts` applies that property without
+  checking a specific industry name.
 
 ## Validation
 

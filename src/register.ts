@@ -3,7 +3,10 @@ import { createMcpSdkAdapter } from './adapter.js';
 import { createProxyLinkClient } from './client.js';
 import { normalizeConfig } from './config.js';
 import { getIndustryPack } from './packs/registry.js';
-import type { TenantProfileResponse } from './packs/types.js';
+import type {
+  TenantProfile,
+  TenantProfileResponse,
+} from './packs/types.js';
 import { logError } from './logging.js';
 import { buildToolNames } from './toolNames.js';
 import { registerKnowledgeBaseTool } from './tools/knowledgeBase.js';
@@ -34,17 +37,7 @@ export async function registerProxyLinkSupport(
     );
   }
 
-  if (
-    normalizedConfig.features.tickets &&
-    toolNames.getTicketTypesToolName &&
-    toolNames.createSupportTicketToolName
-  ) {
-    registerTicketTools(adapter, normalizedConfig, client, {
-      getTicketTypesToolName: toolNames.getTicketTypesToolName,
-      createSupportTicketToolName: toolNames.createSupportTicketToolName,
-    });
-  }
-
+  let profile: TenantProfile;
   try {
     const data = await client.requestJson<TenantProfileResponse>(
       '/tenant/profile',
@@ -54,30 +47,61 @@ export async function registerProxyLinkSupport(
     if (!data.success || !data.profile) {
       throw new Error(data.error || 'Failed to fetch tenant profile.');
     }
-
-    const pack = getIndustryPack(data.profile.industry, data.profile.category);
-    if (pack) {
-      const industryToolNames = pack.register({
-        adapter,
-        config: normalizedConfig,
-        client,
-        profile: data.profile,
-        toolPrefix: normalizedConfig.toolPrefix,
-      });
-      toolNames.industryToolNames = industryToolNames;
-      toolNames.all.push(...industryToolNames);
-    } else {
-      normalizedConfig.logger?.warn?.('proxylink_unknown_industry', {
-        industry: data.profile.industry,
-        category: data.profile.category,
-      });
-    }
+    profile = data.profile;
   } catch (error) {
     logError(normalizedConfig.logger, 'proxylink_tenant_profile_fetch_failed', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
+    removeGenericTicketToolNames(toolNames);
+    return toolNames;
+  }
+
+  const pack = getIndustryPack(profile.industry, profile.category);
+
+  if (
+    normalizedConfig.features.tickets &&
+    !pack?.replacesTicketTools &&
+    toolNames.getTicketTypesToolName &&
+    toolNames.createSupportTicketToolName
+  ) {
+    registerTicketTools(adapter, normalizedConfig, client, {
+      getTicketTypesToolName: toolNames.getTicketTypesToolName,
+      createSupportTicketToolName: toolNames.createSupportTicketToolName,
+    });
+  } else {
+    removeGenericTicketToolNames(toolNames);
+  }
+
+  if (pack) {
+    const industryToolNames = pack.register({
+      adapter,
+      config: normalizedConfig,
+      client,
+      profile,
+      toolPrefix: normalizedConfig.toolPrefix,
+    });
+    toolNames.industryToolNames = industryToolNames;
+    toolNames.all.push(...industryToolNames);
+  } else {
+    normalizedConfig.logger?.warn?.('proxylink_unknown_industry', {
+      industry: profile.industry,
+      category: profile.category,
+    });
   }
 
   return toolNames;
+}
+
+function removeGenericTicketToolNames(
+  toolNames: RegisteredProxyLinkTools,
+): void {
+  const namesToRemove = new Set([
+    toolNames.getTicketTypesToolName,
+    toolNames.createSupportTicketToolName,
+  ]);
+
+  toolNames.all = toolNames.all.filter(name => !namesToRemove.has(name));
+  delete toolNames.getTicketTypesToolName;
+  delete toolNames.createSupportTicketToolName;
 }

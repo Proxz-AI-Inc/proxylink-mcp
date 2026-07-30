@@ -59,19 +59,60 @@ const profileHvacConfigured: FetchHandler = async input => {
   return jsonResponse({ success: false }, { status: 500 });
 };
 
-test('registers deterministic core tool names when profile fetch fails', async () => {
+const profileConsulting: FetchHandler = async input => {
+  if (input.endsWith('/tenant/profile')) {
+    return jsonResponse({
+      success: true,
+      profile: {
+        industry: 'consulting',
+        category: '',
+        schedulingUrl: 'https://example.com/schedule',
+        hasPricingConfig: false,
+        features: { pricing: false },
+      },
+    });
+  }
+  return jsonResponse({ success: false }, { status: 500 });
+};
+
+const profileConferences: FetchHandler = async input => {
+  if (input.endsWith('/tenant/profile')) {
+    return jsonResponse({
+      success: true,
+      profile: {
+        industry: 'conferences',
+        category: '',
+        hasPricingConfig: false,
+        features: { pricing: false },
+      },
+    });
+  }
+  return jsonResponse({ success: false }, { status: 500 });
+};
+
+test('keeps only Knowledge Base when profile fetch fails', async () => {
   const server = new FakeMcpServer();
+  const errors: { message: string; meta?: Record<string, unknown> }[] = [];
 
   const result = await withMockedFetch(profileFailing, () =>
-    registerProxyLinkSupport(server as never, baseConfig),
+    registerProxyLinkSupport(server as never, {
+      ...baseConfig,
+      logger: {
+        error: (message, meta) => errors.push({ message, meta }),
+      },
+    }),
   );
 
-  assert.deepEqual(result.all, [
-    'acme_search_knowledge_base',
-    'acme_get_ticket_types',
-    'acme_create_support_ticket',
-  ]);
-  assert.equal(server.registeredTools.length, 3);
+  assert.deepEqual(result.all, ['acme_search_knowledge_base']);
+  assert.equal(result.getTicketTypesToolName, undefined);
+  assert.equal(result.createSupportTicketToolName, undefined);
+  assert.deepEqual(
+    server.registeredTools.map(tool => tool.name),
+    ['acme_search_knowledge_base'],
+  );
+  assert.ok(
+    errors.some(error => error.message === 'proxylink_tenant_profile_fetch_failed'),
+  );
 });
 
 test('supports knowledge-base-only feature registration', async () => {
@@ -91,7 +132,7 @@ test('supports knowledge-base-only feature registration', async () => {
 test('supports tickets-only feature registration', async () => {
   const server = new FakeMcpServer();
 
-  const result = await withMockedFetch(profileFailing, () =>
+  const result = await withMockedFetch(profileUnknown, () =>
     registerProxyLinkSupport(server as never, {
       ...baseConfig,
       features: { knowledgeBase: false },
@@ -108,7 +149,7 @@ test('supports tickets-only feature registration', async () => {
 test('annotates ticket creation as a titled write tool', async () => {
   const server = new FakeMcpServer();
 
-  await withMockedFetch(profileFailing, () =>
+  await withMockedFetch(profileUnknown, () =>
     registerProxyLinkSupport(server as never, baseConfig),
   );
 
@@ -154,6 +195,11 @@ test('skips vertical tools when industry is unknown', async () => {
   );
 
   assert.equal(result.industryToolNames, undefined);
+  assert.deepEqual(result.all, [
+    'acme_search_knowledge_base',
+    'acme_get_ticket_types',
+    'acme_create_support_ticket',
+  ]);
   assert.ok(
     warnings.some(w => w.message === 'proxylink_unknown_industry'),
     'should log unknown industry warning',
@@ -168,6 +214,12 @@ test('registers HVAC pricing tool when profile matches home-services/hvac', asyn
   );
 
   assert.deepEqual(result.industryToolNames, ['acme_replacement_pricing']);
+  assert.deepEqual(result.all, [
+    'acme_search_knowledge_base',
+    'acme_get_ticket_types',
+    'acme_create_support_ticket',
+    'acme_replacement_pricing',
+  ]);
   const pricingTool = server.registeredTools.find(
     t => t.name === 'acme_replacement_pricing',
   );
@@ -177,5 +229,48 @@ test('registers HVAC pricing tool when profile matches home-services/hvac', asyn
     pricingTool!.description!,
     /acme_show_appointment_scheduler/,
     'description should reference the conventional scheduler tool name',
+  );
+});
+
+test('keeps existing consulting tools unchanged', async () => {
+  const server = new FakeMcpServer();
+
+  const result = await withMockedFetch(profileConsulting, () =>
+    registerProxyLinkSupport(server as never, baseConfig),
+  );
+
+  assert.deepEqual(result.all, [
+    'acme_search_knowledge_base',
+    'acme_get_ticket_types',
+    'acme_create_support_ticket',
+    'acme_schedule_call',
+  ]);
+});
+
+test('replaces generic ticket tools with the conference tool set', async () => {
+  const server = new FakeMcpServer();
+
+  const result = await withMockedFetch(profileConferences, () =>
+    registerProxyLinkSupport(server as never, baseConfig),
+  );
+
+  assert.deepEqual(result.all, [
+    'acme_search_knowledge_base',
+    'acme_get_events',
+    'acme_submit_event_registration_interest',
+    'acme_get_member_actions',
+    'acme_submit_member_action',
+  ]);
+  assert.equal(result.getTicketTypesToolName, undefined);
+  assert.equal(result.createSupportTicketToolName, undefined);
+  assert.deepEqual(result.industryToolNames, [
+    'acme_get_events',
+    'acme_submit_event_registration_interest',
+    'acme_get_member_actions',
+    'acme_submit_member_action',
+  ]);
+  assert.deepEqual(
+    server.registeredTools.map(tool => tool.name),
+    result.all,
   );
 });
